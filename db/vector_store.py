@@ -5,7 +5,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
 import os
 from langchain_openai.embeddings import  OpenAIEmbeddings
-from utils.Config import config
+from utils.config import config
 
 def upload_file(file :str):
     """Loads documents, splits them, creates embeddings, and stores in Chroma vector store"""

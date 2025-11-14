@@ -1,5 +1,4 @@
 from langchain.tools import tool
-import utils.Config as config
 from langchain_chroma import Chroma
 from langchain_openai.embeddings import OpenAIEmbeddings
 import db.vector_store as vector_store

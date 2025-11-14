@@ -4,11 +4,6 @@ langchain-text-splitters
 bs4
 langchain[openai]
 pypdf
-pymupdf
 langchain_community
 streamlit
-gtts
-SpeechRecognition
-pyaudio
 openai
-PyPDF2

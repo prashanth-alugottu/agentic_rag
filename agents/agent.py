@@ -1,6 +1,6 @@
 from langchain.chat_models import init_chat_model
 import os
-from utils.Config import config
+from utils.config import config
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent   
 import tools.retriever_tool as retriever_tool
