@@ -27,9 +27,5 @@ def retrieve_agent(user_query: str):
                          context_schema=context_schema,
                          system_prompt=systsem_prompt)
     
-    result = agent.invoke(
-    {"messages": [{"role": "user", "content": user_query}]})
-    print("------------------------------------------------")
-    print("Sdsdsdd ", result)
-    print("------------------------------------------------")
+    result = agent.invoke({"messages": [{"role": "user", "content": user_query}]})
     return result
