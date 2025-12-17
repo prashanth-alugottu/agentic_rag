@@ -11,5 +11,6 @@ class Config:
     collection_name: str = "vector_collection"
     persist_directory: str = "./vector_db"
     chat_model: str = "gpt-4o-mini"
+    upload_dir: str = "docs/"
 
 config = Config()

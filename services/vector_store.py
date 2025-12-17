@@ -38,7 +38,7 @@ def split_text(documents):
 
 
 
-def get_vector_store():
+def get_retriever(): 
     """
     Return a handle to the existing Chroma vector store.
     """

@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-import db.vector_store as vector_store
+import services.vector_store as vector_store
 import agents.agent as agent
 
 

@@ -7,3 +7,5 @@ pypdf
 langchain_community
 streamlit
 openai
+fastapi
+python-multipart
