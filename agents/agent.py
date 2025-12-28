@@ -4,16 +4,13 @@ from utils.config import config
 import tools.retriever_tool as retriever_tool
 import json
 
-CONFIDENCE_THRESHOLD = 50   # raw cosine score threshold
+CONFIDENCE_THRESHOLD = 50
 
 def retrieve_agent(user_query: str):
     model = ChatOpenAI(model=config.chat_model, temperature=0)
-    expanded_query = (
-        f"{user_query}. Define, explain, introduction, overview, meaning, basics, concept"
-    )
-    
+
     system_prompt = """
-    You are a RAG agent. Retrieve context first then answer based only on context.
+     You are a RAG agent. Retrieve context first then answer based only on context.
     If info is not present, say "Not found in documents".
     Never hallucinate.
     """
@@ -21,50 +18,50 @@ def retrieve_agent(user_query: str):
     agent = create_agent(
         model=model,
         tools=[retriever_tool.retrieve_ans],
-        system_prompt=system_prompt,
-        context_schema="Retrieve document, then generate answer."
+        system_prompt=system_prompt
     )
 
     try:
-        # step 1: call agent + retrieve tool result
-        result = agent.invoke({"messages":[{"role":"user","content":expanded_query}]})
-        tool_output = result["messages"][2].content  # raw tool response
+        result = agent.invoke({"messages":[{"role":"user","content":user_query}]})
+        print("\n🤖 -=====++>> Agent Result:", result, "\n")
+        tool_output = result["messages"][2].content
+        tool_data = json.loads(tool_output)
 
-        try: tool_data = json.loads(tool_output)
-        except: return {"messages":[{"role":"assistant","content":"⚠ Failed: Tool returned invalid output"}]}
+        contexts = tool_data.get("contexts", [])
+        scores   = tool_data.get("scores", [])
 
-        context = tool_data.get("context", "")
-        score = tool_data.get("score", 0)
-        
+        if not contexts:
+            return {"messages":[{"role":"assistant","content":"No relevant document found."}]}
 
-        # Convert cosine(-1→1) to percentage(0→100)
-        confidence = round(((score+1)/2)*100,2)
+        # convert list of scores → percentage
+        best_score = max(scores)
+        confidence = round(((best_score+1)/2)*100,2)
 
-        # If score too low
         if confidence < CONFIDENCE_THRESHOLD:
             return {"messages":[{"role":"assistant",
-                "content": f"⚠ Low confidence ({confidence}%). Try rephrasing your question."}]}
+                "content": f"⚠ Low confidence ({confidence}%). Try rephrasing."}]}
 
-        # Step 2 — Generate final summarized answer using context
+        # -------- join top K docs for summarization ----------
+        merged_context = "\n\n".join(contexts[:3])
+
         final_prompt = f"""
-        Answer the user's question using ONLY this context. Do not copy raw text.
-        Summarize & explain clearly. If answer not found, say so.
+        Answer using ONLY the following context.
+        Summarize in your own words. If not found, say "Not present in docs".
 
         Question: {user_query}
 
-        Context: {context}
+        Context:
+        {merged_context}
         """
 
         answer = model.invoke(final_prompt).content.strip()
 
-        final = f"""
-📌 **Answer from documents:**
+        response = f"""
+                    **Answer based on documents:**
+                    {answer}
+                    \n**Confidence:** {confidence}% """
 
-{answer}
-
-**Confidence:** {confidence}%
-"""
-        return {"messages":[{"role":"assistant","content":final}]}
+        return {"messages":[{"role":"assistant", "content":response}]}
 
     except Exception as e:
         return {"messages":[{"role":"assistant","content":f"Error: {str(e)}"}]}

@@ -7,3 +7,7 @@ pypdf
 langchain_community
 streamlit
 openai
+# transformers
+# tensorflow
+# tf-keras
+# torch

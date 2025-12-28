@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import db.vector_store as vector_store
 import agents.agent as agent
+# from utils import query_rewriter
 
 st.set_page_config(page_title="RAG Chatbot", layout="wide")
 st.title("🧠 Agentic RAG Chatbot")
@@ -21,7 +22,7 @@ if uploaded_file:
         vector_store.upload_file(uploaded_file.name)
         st.success("📄 Document Added to Vector DB!")
     else:
-        st.info("File already exists — not reprocessed ✔")
+        print("ℹ File already exists — not reprocessed ✔")
 
 # ---------------- Chat UI -----------------
 for msg in st.session_state.messages:
@@ -35,6 +36,8 @@ if query:
     with st.chat_message("user"): st.markdown(query)
     with st.spinner("Thinking...⏳"):
 
+        # improved_query = query_rewriter.rewrite_query(query)
+        # print("🔄 Query improved with HF:", improved_query)
         result = agent.retrieve_agent(query)
         answer = result["messages"][0]["content"]
 
