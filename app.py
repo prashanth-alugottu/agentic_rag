@@ -3,80 +3,40 @@ import os
 import db.vector_store as vector_store
 import agents.agent as agent
 
-
-
 st.set_page_config(page_title="RAG Chatbot", layout="wide")
-st.title("Agentic RAG Application")
+st.title("🧠 Agentic RAG Chatbot")
 
+if "messages" not in st.session_state: st.session_state.messages = []
 
-def uplloadingDocs(file : str):
-    return vector_store.upload_file(file)
+# ---------------- File Upload Section -----------------
+uploaded_file = st.file_uploader("Upload your PDF", type=["pdf"])
 
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-if "loading" not in st.session_state:
-    st.session_state.loading = False
-
-uploaded_file = st.file_uploader("Upload your document", type=["pdf"])
 if uploaded_file:
-        # ensure data/ folder exists
-        os.makedirs("docs/", exist_ok=True)
-        file_path = f"docs/{uploaded_file.name}"
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-            
-        uplloadingDocs(uploaded_file.name)
-        st.success("File uploaded successfully!")
-            
-chat_container = st.container()
+    os.makedirs("docs", exist_ok=True)
+    file_path = f"docs/{uploaded_file.name}"
 
-with chat_container:
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            
+    # prevent duplicate uploading same file
+    if not os.path.exists(file_path):
+        with open(file_path,"wb") as f: f.write(uploaded_file.getbuffer())
+        vector_store.upload_file(uploaded_file.name)
+        st.success("📄 Document Added to Vector DB!")
+    else:
+        st.info("File already exists — not reprocessed ✔")
 
+# ---------------- Chat UI -----------------
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-def load_vector_store():
-    return vector_store.get_vector_store()
+query = st.chat_input("Ask something from documents...")
 
-user_query = st.chat_input("Ask a question about your documents")
+if query:
+    st.session_state.messages.append({"role":"user","content":query})
 
-if user_query:
-    st.session_state.messages.append({
-        "role": "user",
-        "content": user_query
-    })
-    
-    with chat_container:
-        with st.chat_message("user"):
-            st.markdown(user_query)
-            
-    with st.spinner("🔄 Agent is processing your request..."):
-        try:
-            result = agent.retrieve_agent(user_query)
-            answer = result["messages"][-1].content
-             # Add assistant response to chat history
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": answer
-            })
-            with chat_container:
-                with st.chat_message("assistant"):
-                    st.markdown(answer)
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-            if "No Chroma database found" in str(e):
-                st.info("No documents have been uploaded yet. Please upload a document to proceed.")
-            
-    
+    with st.chat_message("user"): st.markdown(query)
+    with st.spinner("Thinking...⏳"):
 
+        result = agent.retrieve_agent(query)
+        answer = result["messages"][0]["content"]
 
-
-
-
-
-
-
+        st.session_state.messages.append({"role":"assistant","content":answer})
+        with st.chat_message("assistant"): st.markdown(answer)
