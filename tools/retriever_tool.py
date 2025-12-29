@@ -6,6 +6,7 @@ def retrieve_ans(question: str) -> dict:
     """
     Retrieve top-k documents + scores for better answer generation.
     """
+    print("\n🔎 Retriever Tool received question:", question)
     db = vector_store.getChromaDB()
     results = db.similarity_search_with_relevance_scores(question, k=3)  # top3
 
@@ -19,9 +20,7 @@ def retrieve_ans(question: str) -> dict:
         docs.append(doc.page_content)
         scores.append(float(score))
 
-    print("\n🛠 Retriever returned", len(docs))
-    print("=====>> Docs:", docs, "\n")
-
+    print(f"\n📄 Doc:  {docs} ===== Score: {scores}" )
     return {
         "contexts": docs,
         "scores": scores

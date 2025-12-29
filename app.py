@@ -4,6 +4,18 @@ import db.vector_store as vector_store
 import agents.agent as agent
 # from utils import query_rewriter
 
+# from graph import build_multirag_graph
+from graph.graph import build_multirag_graph
+
+def run_rag(query):
+    graph = build_multirag_graph()
+    initial_state = {"query": query,
+                     "contexts": [],
+                     "scores": [],
+                     "answer": ""}
+    result_state = graph.invoke(initial_state)
+    return result_state.get("answer")
+
 st.set_page_config(page_title="RAG Chatbot", layout="wide")
 st.title("🧠 Agentic RAG Chatbot")
 
@@ -38,8 +50,10 @@ if query:
 
         # improved_query = query_rewriter.rewrite_query(query)
         # print("🔄 Query improved with HF:", improved_query)
-        result = agent.retrieve_agent(query)
-        answer = result["messages"][0]["content"]
+        # result = agent.retrieve_agent(query)
+        # answer = result["messages"][0]["content"]
+        answer = run_rag(query)
+        
 
         st.session_state.messages.append({"role":"assistant","content":answer})
         with st.chat_message("assistant"): st.markdown(answer)

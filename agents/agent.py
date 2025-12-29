@@ -1,72 +1,37 @@
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_agent
-from utils.config import config
-import tools.retriever_tool as retriever_tool
-import json
+from tools import retriever_tool
 
-CONFIDENCE_THRESHOLD = 50
+CONFIDENCE_THRESHOLD = 0.5
 
-def retrieve_agent(user_query: str):
-    model = ChatOpenAI(model=config.chat_model, temperature=0)
+def retrieval_agent_fn(state):
+    query = state["query"]
 
-    system_prompt = """
-     You are a RAG agent. Retrieve context first then answer based only on context.
-    If info is not present, say "Not found in documents".
-    Never hallucinate.
-    """
-
-    agent = create_agent(
-        model=model,
-        tools=[retriever_tool.retrieve_ans],
-        system_prompt=system_prompt
+    tool_output = retriever_tool.retrieve_ans.invoke(
+        {"question": query}
     )
 
-    try:
-        result = agent.invoke({"messages":[{"role":"user","content":user_query}]})
-        print("\n🤖 -=====++>> Agent Result:", result, "\n")
-        tool_output = result["messages"][2].content
-        tool_data = json.loads(tool_output)
+    contexts = tool_output["contexts"]
+    scores = tool_output["scores"]
+    print(f"\n🛠 Retriever Tool Output - Contexts: {contexts} |===========|  Scores: {scores}")
 
-        contexts = tool_data.get("contexts", [])
-        scores   = tool_data.get("scores", [])
+    # 🔴 RAG GUARD
+    if not scores or max(scores) < CONFIDENCE_THRESHOLD:
+        state["contexts"] = ['Not covered in documents']
+        state["scores"] = []
+        state["answer"] = ""
+        return state
 
-        if not contexts:
-            return {"messages":[{"role":"assistant","content":"No relevant document found."}]}
+    state["contexts"] = contexts
+    state["scores"] = scores
+    return state
 
-        # convert list of scores → percentage
-        best_score = max(scores)
-        confidence = round(((best_score+1)/2)*100,2)
 
-        
 
-        # -------- join top K docs for summarization ----------
-        merged_context = "\n\n".join(contexts[:3])
-
-        final_prompt = f"""
-        Answer using ONLY the following context.
-        Summarize in your own words. If not found, say "Not present in docs".
-
-        Question: {user_query}
-
-        Context:
-        {merged_context}
-        """
-
-        answer = model.invoke(final_prompt).content.strip()
-        print("\n📝 Final Answer:", answer)
-        if "not present in docs" in answer.lower():
-            confidence=0.0
-        else:
-            if confidence < CONFIDENCE_THRESHOLD:
-                return {"messages":[{"role":"assistant",
-                "content": f"⚠ Low confidence ({confidence}%). Try rephrasing."}]}
-
-        response = f"""
-                    **Answer based on documents:**
-                    {answer}
-                    \n**Confidence:** {confidence}% """
-
-        return {"messages":[{"role":"assistant", "content":response}]}
-
-    except Exception as e:
-        return {"messages":[{"role":"assistant","content":f"Error: {str(e)}"}]}
+def generator_agent_fn(state):
+    contexts = state["contexts"]
+    query = state["query"]
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    prompt = f"Answer using ONLY this context:\n{contexts}\nQuestion: {query}"
+    answer = llm.invoke(prompt).content
+    state["answer"] = answer
+    return state

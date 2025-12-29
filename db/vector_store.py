@@ -30,7 +30,7 @@ def split_text(documents):
     """Splits documents into smaller chunks for embedding"""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
-        chunk_overlap=100
+        chunk_overlap=50
     )
     return text_splitter.split_documents(documents)
 
