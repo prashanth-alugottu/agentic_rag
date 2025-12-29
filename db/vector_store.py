@@ -1,6 +1,3 @@
-# Updated retriever.py - Using current Cohere embedding model
-
-
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
 import os
@@ -16,12 +13,14 @@ def upload_file(file :str):
     chunks = split_text(documents)
     embeddings = OpenAIEmbeddings(model=config.embedding_model_name, 
                                       api_key=config.open_api_key)
-    
     vectorstore = Chroma(collection_name=config.collection_name,
                          embedding_function=embeddings,
                          persist_directory=config.persist_directory)
-    
-    vectorstore.add_documents(chunks)
+    try:
+        vectorstore.add_documents(chunks)
+        print("Added successfully!")
+    except Exception as e:
+        print("====>>> Error : ", e)
     return vectorstore
 
 
@@ -31,31 +30,9 @@ def split_text(documents):
     """Splits documents into smaller chunks for embedding"""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
-        chunk_overlap=50
+        chunk_overlap=100
     )
     return text_splitter.split_documents(documents)
-
-
-
-
-def get_vector_store():
-    """
-    Return a handle to the existing Chroma vector store.
-    """
-    # Initialize the same embedding model used during DB creation
-    embeddings = OpenAIEmbeddings(model=config.embedding_model_name, 
-                                      api_key=config.open_api_key)
-
-    # Connect to the existing persisted vector store
-    vector_store = Chroma(
-        collection_name=config.collection_name,
-        embedding_function=embeddings,
-        persist_directory=config.persist_directory  # Path where DB was saved
-    )
-
-    return vector_store
-
-
 
 def getChromaDB():
     """Returns the Chroma vector store instance."""
@@ -65,6 +42,5 @@ def getChromaDB():
     db = Chroma(
         persist_directory=config.persist_directory,
         embedding_function=embeddings,
-        collection_name=config.collection_name
-    )
+        collection_name=config.collection_name)
     return db

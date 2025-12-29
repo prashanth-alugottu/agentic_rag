@@ -1,22 +1,28 @@
 from langchain.tools import tool
-from langchain_chroma import Chroma
-from langchain_openai.embeddings import OpenAIEmbeddings
 import db.vector_store as vector_store
 
-@tool
-def retrieve_ans(question : str):
+@tool(return_direct=True)
+def retrieve_ans(question: str) -> dict:
     """
-    Retrieve relevant documents from the Chroma vector store based on the input question.
+    Retrieve top-k documents + scores for better answer generation.
     """
     db = vector_store.getChromaDB()
-    
-    docs = db.similarity_search(question,k= 2)
-    if not docs:
-        return "No relevant documents found."
-    else:
-        print("Retrieved Documents: ", docs)
-        return docs
-    
-    
-    
-    
+    results = db.similarity_search_with_relevance_scores(question, k=3)  # top3
+
+    if not results:
+        return {"contexts": [], "scores": []}
+
+    docs = []
+    scores = []
+
+    for doc, score in results:
+        docs.append(doc.page_content)
+        scores.append(float(score))
+
+    print("\n🛠 Retriever returned", len(docs))
+    print("=====>> Docs:", docs, "\n")
+
+    return {
+        "contexts": docs,
+        "scores": scores
+    }
