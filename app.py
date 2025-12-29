@@ -22,7 +22,7 @@ if uploaded_file:
         vector_store.upload_file(uploaded_file.name)
         st.success("📄 Document Added to Vector DB!")
     else:
-        print("ℹ File already exists — not reprocessed ✔")
+        st.write("ℹ File already exists — not reprocessed ✔")
 
 # ---------------- Chat UI -----------------
 for msg in st.session_state.messages:

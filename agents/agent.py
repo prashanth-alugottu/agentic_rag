@@ -37,9 +37,7 @@ def retrieve_agent(user_query: str):
         best_score = max(scores)
         confidence = round(((best_score+1)/2)*100,2)
 
-        if confidence < CONFIDENCE_THRESHOLD:
-            return {"messages":[{"role":"assistant",
-                "content": f"⚠ Low confidence ({confidence}%). Try rephrasing."}]}
+        
 
         # -------- join top K docs for summarization ----------
         merged_context = "\n\n".join(contexts[:3])
@@ -55,6 +53,13 @@ def retrieve_agent(user_query: str):
         """
 
         answer = model.invoke(final_prompt).content.strip()
+        print("\n📝 Final Answer:", answer)
+        if "not present in docs" in answer.lower():
+            confidence=0.0
+        else:
+            if confidence < CONFIDENCE_THRESHOLD:
+                return {"messages":[{"role":"assistant",
+                "content": f"⚠ Low confidence ({confidence}%). Try rephrasing."}]}
 
         response = f"""
                     **Answer based on documents:**
