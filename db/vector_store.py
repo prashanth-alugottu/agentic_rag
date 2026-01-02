@@ -3,6 +3,7 @@ from langchain_chroma import Chroma
 import os
 from langchain_openai.embeddings import  OpenAIEmbeddings
 from utils.config import config
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def upload_file(file :str):
     """Loads documents, splits them, creates embeddings, and stores in Chroma vector store"""
@@ -24,13 +25,14 @@ def upload_file(file :str):
     return vectorstore
 
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 
 def split_text(documents):
     """Splits documents into smaller chunks for embedding"""
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50
+        chunk_size=300,
+        chunk_overlap=50,
+        separators=["\n\n", "\n", " ", "",]
     )
     return text_splitter.split_documents(documents)
 

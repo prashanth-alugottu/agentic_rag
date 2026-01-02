@@ -9,12 +9,15 @@ from graph.graph import build_multirag_graph
 
 def run_rag(query):
     graph = build_multirag_graph()
-    initial_state = {"query": query,
-                     "contexts": [],
-                     "scores": [],
-                     "answer": ""}
-    result_state = graph.invoke(initial_state)
-    return result_state.get("answer")
+
+    state = {
+        "query": query,
+        "rewritten_query": query
+    }
+
+    result = graph.invoke(state)
+    return result["answer"]
+
 
 st.set_page_config(page_title="RAG Chatbot", layout="wide")
 st.title("🧠 Agentic RAG Chatbot")
@@ -53,7 +56,6 @@ if query:
         # result = agent.retrieve_agent(query)
         # answer = result["messages"][0]["content"]
         answer = run_rag(query)
-        
-
+        print("🧠 RAG Answer:", answer)      
         st.session_state.messages.append({"role":"assistant","content":answer})
         with st.chat_message("assistant"): st.markdown(answer)

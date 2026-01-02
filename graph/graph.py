@@ -1,25 +1,23 @@
-from langgraph.graph import StateGraph, START, END
-from typing_extensions import TypedDict
-from agents.agent import retrieval_agent_fn, generator_agent_fn
+from langgraph.graph import StateGraph
+from graph.state import RAGState
 
-class RagState(TypedDict):
-    query: str
-    contexts: list[str]
-    scores: list[float]
-    answer: str
+from agents.agent import retrieve_node
+from agents.agent import rerank_node
+from agents.agent import generate_node
+from agents.agent import faithfulness_node
+
 
 def build_multirag_graph():
-    # 1️⃣ Create graph with schema
-    graph = StateGraph(RagState)
+    graph = StateGraph(RAGState)
 
-    # 2️⃣ Add nodes
-    graph.add_node("retrieve", retrieval_agent_fn)
-    graph.add_node("generate", generator_agent_fn)
+    graph.add_node("retrieve", retrieve_node)
+    graph.add_node("rerank", rerank_node)
+    graph.add_node("generate", generate_node)
+    graph.add_node("faithfulness", faithfulness_node)
 
-    # 3️⃣ Define flow
-    graph.add_edge(START, "retrieve")
-    graph.add_edge("retrieve", "generate")
-    graph.add_edge("generate", END)
+    graph.set_entry_point("retrieve")
+    graph.add_edge("retrieve", "rerank")
+    graph.add_edge("rerank", "generate")
+    graph.add_edge("generate", "faithfulness")
 
-    # 4️⃣ COMPILE (THIS IS CRITICAL)
     return graph.compile()
