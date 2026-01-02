@@ -1,74 +1,121 @@
-# 🧠 Production-Style RAG System
+# 🧠 RAG-Based Question Answering System
 
-This project implements a **production-grade Retrieval-Augmented Generation (RAG)** pipeline with strong focus on **answer correctness, hallucination reduction, and modular design**.
-
----
-
-## 🏗️ Tech Stack & Core Components
-
-- **Retrieval-Augmented Generation (RAG)**
-- **:contentReference[oaicite:0]{index=0}** – Agentic workflow orchestration
-- **Cross-Encoder Reranking** – High-precision context selection
-- **:contentReference[oaicite:1]{index=1}** – Interactive UI & rapid prototyping
+This project implements a **simple, production-style RAG (Retrieval-Augmented Generation)** system with a focus on **better context selection and reduced hallucination**.
 
 ---
 
-## 🔥 1. Cross-Encoder Reranking (Used in This Project)
+## 🔧 Tech Stack Used
 
-### 🔍 How it Works
+- Retrieval-Augmented Generation (RAG)
+- :contentReference[oaicite:0]{index=0} – agent-based workflow
+- Cross-Encoder Reranking – high-precision document selection
+- :contentReference[oaicite:1]{index=1} – interactive UI
+
+---
+
+## 🔥 Cross-Encoder Reranking (Main Technique Used)
+
+### How it works
 
 - Query and document chunk are passed **together**
-- Model applies **full cross-attention**
-- Outputs a **direct relevance score**
+- Model applies **full attention**
+- Produces a **relevance score**
 
-### 💡 Why It’s Powerful
+### Why it is important
 
-- Understands deep semantic relationships
-- Handles multi-sentence and multi-hop reasoning
-- Selects the **most contextually correct evidence**
+- Understands deep meaning between query and text
+- Works well for long and complex questions
+- Selects the **most relevant context** for the LLM
 
-### ✅ Pros
+### Pros
 
-- Highest relevance accuracy
+- Very high accuracy
 - Strong hallucination reduction
-- Excellent for complex or ambiguous questions
+- Best for complex queries
 
-### ❌ Cons
+### Cons
 
-- Slower inference
+- Slower than embedding-based methods
 - Costly at large scale
 
-### 🏢 Used By
+Used in:
 
 - ChatGPT-style RAG systems
 - Perplexity-like search engines
-- Enterprise knowledge assistants
-
-> 📌 **Gold standard for reranking when answer quality matters most**
+- Enterprise knowledge bots
 
 ---
 
-## ⚡ 2. Bi-Encoder Reranking (Lightweight Alternative)
+## ⚡ Other Reranking Approaches (Brief)
 
-### 🔍 How it Works
+### Bi-Encoder Reranking
 
-- Encode query and documents **separately**
-- Compute similarity using **vector distance**
+- Encodes query and documents separately
+- Faster and cheaper
+- Slightly less accurate
 
-### ⚙️ Characteristics
+Best for:
 
-- Faster than cross-encoders
-- No token-level interaction → less expressive
-
-### ⚖️ Trade-Off
-
-- Better latency & cost
-- Slight drop in relevance accuracy
-
-> 📌 **Best for large-scale systems where speed > precision**
+- Large datasets
+- Low-latency systems
 
 ---
 
-## 🧠 3. LLM-Based Reranking (Reasoning-Driven)
+### LLM-Based Reranking
 
-### 🧪 Example Prompt
+- LLM ranks passages using reasoning
+- Very intelligent but expensive
+
+Used in:
+
+- Legal
+- Medical
+- High-risk applications
+
+---
+
+### Hybrid Reranking
+
+- Combines BM25 + Vector similarity + Cross-Encoder
+- Used in search engines and e-commerce
+
+---
+
+## 🛑 Pre-Rerank Filtering
+
+Before reranking:
+
+- Remove very small chunks
+- Remove headers and boilerplate text
+- Remove irrelevant content
+
+Benefit:
+
+- Better reranking quality
+- Less noise and compute cost
+
+---
+
+## 🔄 Reranking vs Confidence Score
+
+| Feature | Reranking                | Confidence Score        |
+| ------- | ------------------------ | ----------------------- |
+| When    | Before answer generation | After answer generation |
+| Purpose | Select best context      | Validate final answer   |
+| Level   | Document / chunk         | Answer                  |
+| Effect  | Prevent hallucination    | Detect hallucination    |
+
+---
+
+## 🧠 Simple Takeaway
+
+Reranking decides **what the LLM reads**.  
+Confidence score checks **how reliable the LLM answer is**.
+
+---
+
+## 🚀 Why This Project
+
+- Built like a real production RAG system
+- Focus on accuracy over blind generation
+- Easy to extend with agents and evaluation
