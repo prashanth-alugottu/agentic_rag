@@ -4,15 +4,6 @@ This project implements a **simple, production-style RAG (Retrieval-Augmented Ge
 
 ---
 
-## 🔧 Tech Stack Used
-
-- Retrieval-Augmented Generation (RAG)
-- :contentReference[oaicite:0]{index=0} – agent-based workflow
-- Cross-Encoder Reranking – high-precision document selection
-- :contentReference[oaicite:1]{index=1} – interactive UI
-
----
-
 ## 🔥 Cross-Encoder Reranking (Main Technique Used)
 
 ### How it works
@@ -37,14 +28,6 @@ This project implements a **simple, production-style RAG (Retrieval-Augmented Ge
 
 - Slower than embedding-based methods
 - Costly at large scale
-
-Used in:
-
-- ChatGPT-style RAG systems
-- Perplexity-like search engines
-- Enterprise knowledge bots
-
----
 
 ## ⚡ Other Reranking Approaches (Brief)
 
@@ -93,29 +76,3 @@ Benefit:
 
 - Better reranking quality
 - Less noise and compute cost
-
----
-
-## 🔄 Reranking vs Confidence Score
-
-| Feature | Reranking                | Confidence Score        |
-| ------- | ------------------------ | ----------------------- |
-| When    | Before answer generation | After answer generation |
-| Purpose | Select best context      | Validate final answer   |
-| Level   | Document / chunk         | Answer                  |
-| Effect  | Prevent hallucination    | Detect hallucination    |
-
----
-
-## 🧠 Simple Takeaway
-
-Reranking decides **what the LLM reads**.  
-Confidence score checks **how reliable the LLM answer is**.
-
----
-
-## 🚀 Why This Project
-
-- Built like a real production RAG system
-- Focus on accuracy over blind generation
-- Easy to extend with agents and evaluation
