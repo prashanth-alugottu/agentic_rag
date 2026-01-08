@@ -6,8 +6,25 @@ from graph.state import RAGState
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
+def rewrite_query_node(state: RAGState):
+    original_query = state["query"]
+    print("\n📝 Original Query:", original_query)
+    prompt = f"""
+        You are a query rewriting assistant.
 
-CONFIDENCE_THRESHOLD = 0.5
+        Rewrite the user's query to be more specific
+        for retrieving relevant documents from a vector database.
+
+        Original Query:
+        {original_query}
+
+        Rewritten Query:
+        """
+    response = llm.invoke(prompt)
+    print("\n📝 Query Rewriting Response:", response.content)
+    rewritten_query = response.content.strip()
+    print("\n✍️ Rewritten Query:", rewritten_query)
+    return {"rewritten_query": rewritten_query}
 
 def retrieve_node(state):
     query = state.get("rewritten_query") or state["query"]
@@ -32,21 +49,24 @@ def rerank_node(state: RAGState):
         return {"reranked_docs": []}
 
     pairs = [(query, d.page_content) for d in docs]
+    print("\n🔎 Reranking pairs : ",pairs)
     scores = reranker.predict(pairs)
+    print("\n🔎 Reranking scores : ",scores)
 
     ranked = sorted(
         zip(docs, scores),
         key=lambda x: x[1],
         reverse=True
     )
+    print("\n🔎 Reranked documents and scores : ",ranked)
 
     # keep only strong evidence
     top_docs = [
         doc for doc, score in ranked[:5]
         if score > 0.2
     ]
+    print("Top Docs : ",top_docs)
 
-    print(f"🔎 Reranked to {len(top_docs)} top documents.")
     for doc in top_docs:
         print("----- Top Document chunk:", doc.page_content[:100].replace("\n"," "), "...")
 
@@ -89,12 +109,14 @@ def generate_node(state: RAGState):
 def faithfulness_node(state: RAGState):
     if not state["grounded"]:
         return state
-
+    docs = state["reranked_docs"]
+    context = "\n\n".join(d.page_content for d in docs)
+    print("\n🔍 Faithfulness check context:", context)
     prompt = f"""
             Check if the answer is fully supported by the context.
 
             Context:
-            {state['reranked_docs']}
+            {context}
 
             Answer:
             {state['answer']}
