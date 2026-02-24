@@ -1,12 +1,11 @@
-from backend.src.core.logging_config import setup_logging
+# from backend.src.core.logging_config import setup_logging
+from backend.logger.custom_logger import CustomLogger
+logger = CustomLogger().get_logger(__file__)
 
-setup_logging()
-
-import logging
-log = logging.getLogger(__name__)
 def main():
     print("Hello from agentic-rag!")
-    log.info("HI chinnu All the best")
+    logger.info("App started Al the best ")
+    logger.info("Hello Again!")
 
 
 if __name__ == "__main__":

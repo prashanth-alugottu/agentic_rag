@@ -32,7 +32,7 @@ class CustomLogger:
             processors=[
                 structlog.processors.TimeStamper(fmt="iso", utc=True, key="timestamp"),
                 structlog.processors.add_log_level,
-                structlog.processors.EventRenamer(to="event"),
+                structlog.processors.EventRenamer(to="message"),
                 structlog.processors.JSONRenderer()
             ],
             logger_factory=structlog.stdlib.LoggerFactory(),
