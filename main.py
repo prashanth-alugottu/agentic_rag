@@ -13,8 +13,7 @@ def main():
     # select provider
     llm_cfg = config["llm"]["openai"]
     logger.info(f"LLMs is. : {llm_cfg}")
-    provider = {config["llm"]["openai"]["provider"]}
-    logger.info(f"LLMs Provider  : {provider}")
+    logger.info(f"LLMs Provider  : {llm_cfg.get('provider')}")
 
 
 
