@@ -16,5 +16,8 @@ dependencies = [
     "pypdf==6.5.0",
     "python-dotenv==1.2.1",
     "uvicorn==0.40.0",
-    "structlog==25.5.0"
+    "structlog==25.5.0",
+    "faiss-cpu==1.13.2",
+    "rank-bm25==0.2.2",
+    "sentence-transformers==5.2.3"
 ]

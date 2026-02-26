@@ -1,19 +1,16 @@
 # from backend.src.core.logging_config import setup_logging
 from backend.logger.custom_logger import CustomLogger
-from backend.utils.config_loader import load_config
-logger = CustomLogger().get_logger(__file__)
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+from backend.script.ingestion import loading_data, save_data_local
+log = CustomLogger().get_logger(__file__)
 
 def main():
-    print("Hello from agentic-rag!")
-    logger.info("App started Al the best ")
-    logger.info("Hello Again!")
+    raw_data=loading_data()
+    save_data_local(raw_data)
 
-    config = load_config()
-
-    # select provider
-    llm_cfg = config["llm"]["openai"]
-    logger.info(f"LLMs is. : {llm_cfg}")
-    logger.info(f"LLMs Provider  : {llm_cfg.get('provider')}")
+    
 
 
 

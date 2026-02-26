@@ -3,8 +3,11 @@ llm:
   openai:
     provider: "openai"
     model_name: "gpt-4o-mini"
+    embeddings: "text-embedding-3-small"
     temperature: 0
     max_output_tokens: 2048
+    vector_db : "vector_db"
+    
     
   # groq:
   #   provider: "groq"
