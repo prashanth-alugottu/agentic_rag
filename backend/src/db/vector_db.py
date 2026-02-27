@@ -41,8 +41,15 @@ def build_bm25_from_docs(vector_db):
     """
     # Extract stored documents from FAISS docstore
     docs = list(vector_db.docstore._dict.values())
+    # store=vector_db.docstore._dict
+    # for doc_id, doc in store.items():
+    #     if "2,00,00,000" in doc.page_content:
+    #         print()
+    #         print("FOUND:", doc.page_content)
+    #         print()
+
     # Build BM25
     bm25 = BM25Retriever.from_documents(docs)
     # Optional: number of results to return
-    bm25.k = 5
+    bm25.k = 10
     return bm25
