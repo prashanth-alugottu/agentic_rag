@@ -12,6 +12,7 @@ log = CustomLogger().get_logger(__file__)
 
 class QueryRequest(BaseModel):
     query:str
+    ground_truth: str
 
 
 @asynccontextmanager
@@ -24,19 +25,23 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+# app = FastAPI()
 
 @app.get("/")
 def root():
+
     return {"status": "ok"}
 
 @app.post("/query")
 def user_query(req:QueryRequest):
     start = time.perf_counter()
     query=req.query
+    ground_truth= req.ground_truth
     log.info(f"Query from the user. : {query}")
     graph = app.state.graph
     result = graph.invoke({
-        "query": query
+        "query": query,
+        "ground_truth":ground_truth
     })
 
     answer = result["answer"]

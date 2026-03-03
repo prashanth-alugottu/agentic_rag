@@ -17,8 +17,6 @@ load_dotenv()
 
 log = CustomLogger().get_logger(__file__)
 
-
-
 def load_pdf_table_aware(pdf_path: str):
     docs = []
     # -------- TEXT BLOCKS --------
@@ -130,9 +128,6 @@ def save_data_local(raw_docs):
     )
     db = FAISS.from_documents(splits, embeddings)
     db.save_local(llm_config.get("vector_db"))
-
-# data=loading_data()
-# save_data_local(data)
 
 
 
