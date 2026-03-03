@@ -16,3 +16,6 @@ venv/
 
 # Env files
 .env
+
+mlflow.db
+vector_db
