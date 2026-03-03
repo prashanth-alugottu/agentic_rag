@@ -17,6 +17,8 @@ load_dotenv()
 
 log = CustomLogger().get_logger(__file__)
 
+
+
 def load_pdf_table_aware(pdf_path: str):
     docs = []
     # -------- TEXT BLOCKS --------

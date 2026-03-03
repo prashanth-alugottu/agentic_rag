@@ -5,6 +5,9 @@ from backend.logger.custom_logger import CustomLogger
 from backend.exception.custom_exception import AppException
 from sentence_transformers import CrossEncoder
 from backend.src.core.llm_loader import llm_load
+import threading
+from backend.src.eval.evaluate import calculate_ragas_metrics
+from backend.src.eval.ml_logs import _log_to_mlflow
 
 log = CustomLogger().get_logger(__file__)
 
@@ -51,7 +54,8 @@ def topk_node(state):
     return {"context": state["reranked_docs"][:5]}
 
 def generate_node(state):
-    context_text = "\n\n".join(d.page_content for d in state["context"])
+    context_docs = state["context"]
+    context_text = "\n\n".join(d.page_content for d in context_docs)
 
 
     prompt = f"""
@@ -77,4 +81,34 @@ def generate_node(state):
     log.info(f"Final Prompt is : {prompt}")
     llm=llm_load()
     resp = llm.invoke(prompt)
-    return {"answer": resp.content}
+    ans = resp.content
+    return {"answer": ans}
+
+
+def evaluate_rag(state):
+    answer = state["answer"]
+
+    if not state.get("ground_truth"):
+        return {}
+
+    threading.Thread(target=background_eval,args=(state,answer), daemon=True).start()
+
+    return {}
+
+def background_eval(state,answer):
+    try:
+        contexts = [doc.page_content for doc in state["context"]]
+
+        result = calculate_ragas_metrics(
+            state["query"],
+            answer,
+            contexts,
+            state["ground_truth"],
+        )
+
+        log.info(f"RAGAS result: {result}")
+
+        _log_to_mlflow(result, state)
+
+    except Exception as e:
+        log.error(f"Background RAGAS error: {e}")

@@ -10,3 +10,4 @@ class RAGState(TypedDict):
     reranked_docs: List[Document]
     context : List[Document]
     answer: str
+    ground_truth:str
