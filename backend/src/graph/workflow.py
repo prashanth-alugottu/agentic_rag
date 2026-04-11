@@ -7,6 +7,7 @@ from backend.src.graph.nodes import rerank_node
 from backend.src.graph.nodes import topk_node
 from backend.src.graph.nodes import generate_node
 from backend.src.graph.nodes import evaluate_rag
+from langgraph.checkpoint.memory import MemorySaver
 
 def create_graph(bm25, vector_db):
     """"Construct and compiles the langgraph workflow
@@ -28,16 +29,17 @@ def create_graph(bm25, vector_db):
 
     # define the entry point
     workflow.set_entry_point("bm25")
-
+    
     workflow.add_edge("bm25","vector_node")
     workflow.add_edge("vector_node","merge_node")
-    workflow.add_edge("merge_node","rerank_node")
+    workflow.add_edge("merge_node","rerank_node") 
     workflow.add_edge("rerank_node","topk_node")
     workflow.add_edge("topk_node","generate_node")
     workflow.add_edge("generate_node","evaluation")
     workflow.add_edge("evaluation",END)
 
     # compiling
-    app=workflow.compile()
+    memory = MemorySaver()
+    app=workflow.compile(checkpointer = memory)
     return app
 

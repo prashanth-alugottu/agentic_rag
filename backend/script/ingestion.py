@@ -133,3 +133,45 @@ def save_data_local(raw_docs):
 
 
 
+
+import fitz  # PyMuPDF
+import io
+from PIL import Image
+
+doc = fitz.open("sample.pdf")
+
+images = []
+
+for page_index in range(len(doc)):
+    page = doc[page_index]
+    image_list = page.get_images(full=True)
+
+    for img in image_list:
+        xref = img[0]
+
+        base_image = doc.extract_image(xref)
+        image_bytes = base_image["image"]
+
+        # Convert to PIL
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
+        images.append(image)
+
+print("Total images:", len(images))
+
+from transformers import CLIPProcessor, CLIPModel
+import torch
+
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+embeddings = []
+
+for image in images:
+    inputs = processor(images=image, return_tensors="pt")
+
+    with torch.no_grad():
+        outputs = model.get_image_features(**inputs)
+
+    embedding = outputs.squeeze().cpu().numpy()
+    embeddings.append(embedding)

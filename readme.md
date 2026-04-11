@@ -48,3 +48,4 @@ We are goint to use the following:
 can use miniLM or SLM(1b param)                     -- Completed
 20. Local vector store using FAISS                  -- Completed
 21. Kafka
+22. SAGE MAKER --> Very Veru Imp

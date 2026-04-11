@@ -20,7 +20,7 @@ def bm25_node(bm25):
 
 def vector_node(vector_db):
     def _node(state):
-        docs = vector_db.similarity_search(state["query"], k=30)
+        docs = vector_db.similarity_search(state["query"], k=15)
         return {"dense_docs": docs}
     return _node
 
@@ -71,7 +71,7 @@ def generate_node(state):
         - Keep answer concise and short in 3 to 4 lines max.
 
         Context:
-        { {context_text} }
+        {context_text}
 
         User Question:
         {state['query']}

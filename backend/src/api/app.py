@@ -39,10 +39,11 @@ def user_query(req:QueryRequest):
     ground_truth= req.ground_truth
     log.info(f"Query from the user. : {query}")
     graph = app.state.graph
+    config = {"configurable":{"thread_id":"1"}}
     result = graph.invoke({
         "query": query,
         "ground_truth":ground_truth
-    })
+    },config=config)
 
     answer = result["answer"]
     log.info(f"Final generated ans : {answer}")
