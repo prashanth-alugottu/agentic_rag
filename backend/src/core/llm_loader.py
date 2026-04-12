@@ -1,6 +1,7 @@
 from langchain_openai import ChatOpenAI
 from backend.utils.config_loader import load_config
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+import dspy
 
 config=load_config()
 llm_config=config["llm"]["openai"]
@@ -18,3 +19,6 @@ def embedding_loader():
     embeddings = OpenAIEmbeddings(model=llm_config.get("embeddings"))
     return embeddings
     
+def configure_dsp():
+    """ Configure dsp with openai"""
+    return dspy.configure(lm=dspy.LM('openai/gpt-4o-mini'))

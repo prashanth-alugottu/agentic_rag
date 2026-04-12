@@ -1,13 +1,11 @@
-from langchain_community.document_loaders import PyPDFLoader
-from pathlib import Path
-from backend.src.graph.state import RAGState
 from backend.logger.custom_logger import CustomLogger
-from backend.exception.custom_exception import AppException
 from sentence_transformers import CrossEncoder
 from backend.src.core.llm_loader import llm_load
+from backend.src.core.llm_loader import configure_dsp
 import threading
 from backend.src.eval.evaluate import calculate_ragas_metrics
 from backend.src.eval.ml_logs import _log_to_mlflow
+import dspy
 
 log = CustomLogger().get_logger(__file__)
 
@@ -52,6 +50,14 @@ def rerank_node(state):
 
 def topk_node(state):
     return {"context": state["reranked_docs"][:5]}
+
+def dspy_rag_node(state):
+    # Assume merged_docs is a list of document objects with .page_content
+    merged_context = "\n".join([d.page_content for d in state["context"]])
+    configure_dsp()
+    rag = dspy.ChainOfThought('context, question -> response')
+    result = rag(context=merged_context, question=state["query"])
+    return {"answer": result.response}
 
 def generate_node(state):
     context_docs = state["context"]

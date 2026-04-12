@@ -25,5 +25,6 @@ dependencies = [
     "langfuse-langchain==2.60.10.1",
     "ragas==0.4.3",
     "mlflow==3.10.0",
-    "openai==2.30.0"
+    "openai==2.30.0",
+    "dspy==3.1.3"
 ]
