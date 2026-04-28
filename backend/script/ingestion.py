@@ -3,7 +3,7 @@ from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from backend.logger.custom_logger import CustomLogger
 from backend.exception.custom_exception import AppException
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from backend.utils.config_loader import load_config
 import os
 from langchain_community.vectorstores import FAISS
@@ -12,6 +12,8 @@ import fitz
 import pdfplumber
 from langchain_core.documents import Document
 from pathlib import Path
+from langchain_community.retrievers import BM25Retriever
+import pickle
 
 load_dotenv()
 
@@ -106,7 +108,6 @@ def loading_data():
     try:
         pdf_path = f"{Path(__file__).resolve().parents[1]}/data/Policy.pdf"
         documents = load_pdf_table_aware(pdf_path)
-        # print(documents)
         log.info("Documents are loaded")
         return documents
     except Exception as e:
@@ -115,6 +116,7 @@ def loading_data():
     
 def save_data_local(raw_docs):
     """ Chunking the documents """
+
     text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size = 800,
                 chunk_overlap = 120
@@ -122,7 +124,8 @@ def save_data_local(raw_docs):
     config=load_config()
     llm_config=config["llm"]["openai"]
     print(f"\n\n\n ====> Raw Docs {raw_docs}")
-    splits = text_splitter.split_documents(raw_docs)
+    splits = text_splitter.split_documents(raw_docs) # nlp -> vector
+
     log.info(f"Chunks are : {splits}")
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
@@ -131,47 +134,56 @@ def save_data_local(raw_docs):
     db = FAISS.from_documents(splits, embeddings)
     db.save_local(llm_config.get("vector_db"))
 
+    # 🔥 Create BM25
+    bm25 = BM25Retriever.from_documents(splits)
+    bm25.k = 5
+
+    # Save BM25
+    with open("db_files/bm25.pkl", "wb") as f:
+        pickle.dump(bm25, f)
 
 
 
-import fitz  # PyMuPDF
-import io
-from PIL import Image
 
-doc = fitz.open("sample.pdf")
+def extract_images():
+    import fitz
+    import io
+    from PIL import Image
 
-images = []
+    doc = fitz.open("sample.pdf")
 
-for page_index in range(len(doc)):
-    page = doc[page_index]
-    image_list = page.get_images(full=True)
+    images = []
 
-    for img in image_list:
-        xref = img[0]
+    for page_index in range(len(doc)):
+        page = doc[page_index]
+        image_list = page.get_images(full=True)
 
-        base_image = doc.extract_image(xref)
-        image_bytes = base_image["image"]
+        for img in image_list:
+            xref = img[0]
 
-        # Convert to PIL
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+            base_image = doc.extract_image(xref)
+            image_bytes = base_image["image"]
 
-        images.append(image)
+            # Convert to PIL
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-print("Total images:", len(images))
+            images.append(image)
 
-from transformers import CLIPProcessor, CLIPModel
-import torch
+    print("Total images:", len(images))
 
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    from transformers import CLIPProcessor, CLIPModel
+    import torch
 
-embeddings = []
+    model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-for image in images:
-    inputs = processor(images=image, return_tensors="pt")
+    embeddings = []
 
-    with torch.no_grad():
-        outputs = model.get_image_features(**inputs)
+    for image in images:
+        inputs = processor(images=image, return_tensors="pt")
 
-    embedding = outputs.squeeze().cpu().numpy()
-    embeddings.append(embedding)
+        with torch.no_grad():
+            outputs = model.get_image_features(**inputs)
+
+        embedding = outputs.squeeze().cpu().numpy()
+        embeddings.append(embedding)

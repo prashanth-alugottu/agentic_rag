@@ -4,7 +4,8 @@ from backend.utils.config_loader import load_config
 import os
 from langchain_community.retrievers import BM25Retriever
 from dotenv import load_dotenv
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+import pickle
 
 load_dotenv()
 def load_vector_db():
@@ -24,32 +25,8 @@ def load_vector_db():
         allow_dangerous_deserialization=True
     )
 
-    # Build BM25 from same docs
-    bm25 = build_bm25_from_docs(vector_db)
+    # Load BM25
+    with open("db_files/bm25.pkl", "rb") as f:
+        bm25 = pickle.load(f)
+
     return vector_db,bm25
-
-
-def build_bm25_from_docs(vector_db):
-    """
-    Build BM25 retriever from documents stored in FAISS vector store.
-    
-    Args:
-        vector_db: FAISS vector store
-    
-    Returns:
-        BM25Retriever
-    """
-    # Extract stored documents from FAISS docstore
-    docs = list(vector_db.docstore._dict.values())
-    # store=vector_db.docstore._dict
-    # for doc_id, doc in store.items():
-    #     if "2,00,00,000" in doc.page_content:
-    #         print()
-    #         print("FOUND:", doc.page_content)
-    #         print()
-
-    # Build BM25
-    bm25 = BM25Retriever.from_documents(docs)
-    # Optional: number of results to return
-    bm25.k = 10
-    return bm25

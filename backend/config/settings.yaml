@@ -6,7 +6,7 @@ llm:
     embeddings: "text-embedding-3-small"
     temperature: 0
     max_output_tokens: 2048
-    vector_db : "vector_db"
+    vector_db : "db_files"
     
     
   # groq:

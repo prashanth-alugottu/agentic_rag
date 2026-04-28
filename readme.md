@@ -49,3 +49,5 @@ can use miniLM or SLM(1b param)                     -- Completed
 20. Local vector store using FAISS                  -- Completed
 21. Kafka
 22. SAGE MAKER --> Very Veru Imp
+23. Guardrils
+24. cache

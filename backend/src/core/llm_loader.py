@@ -18,7 +18,8 @@ def embedding_loader():
     """
     embeddings = OpenAIEmbeddings(model=llm_config.get("embeddings"))
     return embeddings
-    
+
 def configure_dsp():
-    """ Configure dsp with openai"""
-    return dspy.configure(lm=dspy.LM('openai/gpt-4o-mini'))
+    if dspy.settings.lm is None:
+        lm = dspy.LM("openai/gpt-4o-mini")
+        dspy.settings.configure(lm=lm)

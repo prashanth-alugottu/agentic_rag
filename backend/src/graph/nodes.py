@@ -6,19 +6,20 @@ import threading
 from backend.src.eval.evaluate import calculate_ragas_metrics
 from backend.src.eval.ml_logs import _log_to_mlflow
 import dspy
+from backend.src.dspy.rag_dspy import RAGSignature, MultiStepRAG, ContextFilter
 
 log = CustomLogger().get_logger(__file__)
 
-def bm25_node(bm25):
-    def _node(state):
+def bm25_node(bm25): # 5
+    def _node(state): # key word matching  (TF-IDF)
         docs = bm25.invoke(state["query"])
         return {"sparse_docs": docs}
     return _node
 
 
-def vector_node(vector_db):
+def vector_node(vector_db): #5
     def _node(state):
-        docs = vector_db.similarity_search(state["query"], k=15)
+        docs = vector_db.similarity_search(state["query"], k=5)
         return {"dense_docs": docs}
     return _node
 
@@ -52,12 +53,29 @@ def topk_node(state):
     return {"context": state["reranked_docs"][:5]}
 
 def dspy_rag_node(state):
-    # Assume merged_docs is a list of document objects with .page_content
-    merged_context = "\n".join([d.page_content for d in state["context"]])
-    configure_dsp()
-    rag = dspy.ChainOfThought('context, question -> response')
-    result = rag(context=merged_context, question=state["query"])
-    return {"answer": result.response}
+    query = state["query"]
+    docs = state["context"]
+    full_context = "\n".join([d.page_content for d in docs])
+    
+    # Step 2: Filter context (reduce noise)
+    context_filter=ContextFilter()
+    filtered=context_filter(context=full_context,question=query)
+    filtered_context=getattr(filtered, "filtered_context",full_context)
+    print("========>>> filtered_context : ", filtered_context)
+     # Step 3: Multi-step reasoning
+    rag = MultiStepRAG()
+    result = rag(context=filtered_context, question=query)
+
+    answer = result.answer
+    print("========>>> : ",result)
+
+    # Step 4: Fallback (production safety)
+    if not answer or "I don't know" in answer:
+        llm = llm_load()
+        fallback = llm.invoke(query).content
+        return {"answer": fallback}
+
+    return {"answer": answer}
 
 def generate_node(state):
     context_docs = state["context"]

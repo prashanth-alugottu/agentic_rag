@@ -2,11 +2,16 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from backend.src.db.vector_db import load_vector_db
+# from script.ingestion import loading_data, save_data_local
 from backend.src.core.llm_loader import llm_load
 from backend.src.graph.workflow import create_graph
 from pydantic import BaseModel
 from backend.logger.custom_logger import CustomLogger
 import time
+from fastapi import UploadFile, File
+import pickle
+import os
+from backend.src.core.llm_loader import configure_dsp
 
 log = CustomLogger().get_logger(__file__)
 
@@ -17,7 +22,7 @@ class QueryRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
+    configure_dsp()
     vector_db, bm25 = load_vector_db()
     graph = create_graph(bm25, vector_db)
     app.state.graph = graph
@@ -29,7 +34,6 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def root():
-
     return {"status": "ok"}
 
 @app.post("/query")
