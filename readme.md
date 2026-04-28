@@ -1,78 +1,53 @@
-# 🧠 RAG-Based Question Answering System
 
-This project implements a **simple, production-style RAG (Retrieval-Augmented Generation)** system with a focus on **better context selection and reduced hallucination**.
 
----
+Steps to run the project
 
-## 🔥 Cross-Encoder Reranking (Main Technique Used)
+1. Open the Project
+2. run "uv sync" in comand prompt
+3. mlflow server \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlruns \
+  --host 127.0.0.1 \
+  --port 5001
 
-### How it works
+  Here port number should be same as in the code in ml_logs.py file
+    mlflow.set_tracking_uri("http://127.0.0.1:5001")
 
-- Query and document chunk are passed **together**
-- Model applies **full attention**
-- Produces a **relevance score**
+4. uvicorn backend.src.api.app:app --reload 
 
-### Why it is important
+=======================================================================================
+We are goint to use the following:
 
-- Understands deep meaning between query and text
-- Works well for long and complex questions
-- Selects the **most relevant context** for the LLM
+1. MCP api hit
+2. Logging - completed                  -- Completed
+3. Readme strp by step                   -- Completed
+4. pyproject.toml instead
+ of requirements.txt - completed          -- Completed
+5. using uv instead of pip                -- Completed
+6. Docker deployement
+7. CI/CD
+8. Langgraph                               -- Completed
+9. config/
+    settings.yaml                          -- Completed
 
-### Pros
+10. RAG evaluation script.
+ --> scripts/evaluate_rag.py
+    faithfulness
+    context relevance
+    answer correctness                       -- Completed
 
-- Very high accuracy
-- Strong hallucination reduction
-- Best for complex queries
-
-### Cons
-
-- Slower than embedding-based methods
-- Costly at large scale
-
-## ⚡ Other Reranking Approaches (Brief)
-
-### Bi-Encoder Reranking
-
-- Encodes query and documents separately
-- Faster and cheaper
-- Slightly less accurate
-
-Best for:
-
-- Large datasets
-- Low-latency systems
-
----
-
-### LLM-Based Reranking
-
-- LLM ranks passages using reasoning
-- Very intelligent but expensive
-
-Used in:
-
-- Legal
-- Medical
-- High-risk applications
-
----
-
-### Hybrid Reranking
-
-- Combines BM25 + Vector similarity + Cross-Encoder
-- Used in search engines and e-commerce
-
----
-
-## 🛑 Pre-Rerank Filtering
-
-Before reranking:
-
-- Remove very small chunks
-- Remove headers and boilerplate text
-- Remove irrelevant content
-
-Benefit:
-
-- Better reranking quality
-- Less noise and compute cost
+11. LangSmith                                -- Completed
+12. OpenAI api and Embeddings                 -- Completed
+13. Fast API                             -- Completed
+14. Custome Exceptions                       -- Completed
+15. Cacahing, Manitoring
+16. Cost for each query and disply some where
+17. Memory
+18. Hybdrid search                              -- Completed
+19. Retrival --> Rerranking we 
+can use miniLM or SLM(1b param)                     -- Completed
+20. Local vector store using FAISS                  -- Completed
+21. Kafka
+22. SAGE MAKER --> Very Veru Imp
+23. Guardrils
+24. cache
